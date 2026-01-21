@@ -86,20 +86,32 @@ export interface Plan {
   price: number;
   sessions_included: number;
   features: string[];
+  recording_days?: number;
+  has_ai_summaries?: boolean;
+  has_priority_booking?: boolean;
+  is_active?: boolean;
   is_popular?: boolean;
 }
 
 // Subscription types
-export type SubscriptionStatus = 'active' | 'cancelled' | 'expired';
+export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'past_due';
 
 export interface Subscription {
   id: string;
   user_id: string;
   plan_id: string;
+  plan?: Plan; // Nested plan data
   status: SubscriptionStatus;
   current_period_start: string;
   current_period_end: string;
   sessions_remaining: number;
+  cancelled_at?: string;
+  cancel_reason?: string;
+}
+
+// For the subscription with full plan details
+export interface SubscriptionWithPlan extends Omit<Subscription, 'plan'> {
+  plan: Plan;
 }
 
 // Notification types
