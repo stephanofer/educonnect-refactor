@@ -10,7 +10,7 @@ MOST IMPORTANT WE USE SUPABASE FOR ALL BACKEND NEEDS (AUTH, DB, STORAGE), AND ON
 - Todos los UI tiene que ser responsive
 - Para los forumarios tienen que siempre estar con sus validaciones estamos usando zod + reac hook form + Si esque es un form chico simplemente con los elementos normales si son form mas complejos usar los componentes de shadcn
 - Si necesitas un componente siempre revisa que el componente si lo tiene shadcn usa el de shadcn si no implementalo tu mismo pero siempre verifica si shadcn ya lo tiene para que ya no crees tu mismo 
-
+-Si tiene todo el sentido del mundo utiliza Tanstack Query para las peticiones si determinas quen no hace falta entonces no lo utilices.
 
 ### Features
 

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { Loader2 } from "lucide-react";
 import { supabase, isSupabaseConfigured } from "@/ui/lib/supabase";
 import { useAuthStore } from "@/ui/stores/auth.store";
+import { getDashboardPath } from "@/ui/lib/utils";
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -29,9 +30,7 @@ export default function AuthCallbackPage() {
           await fetchProfile();
           
           const profile = useAuthStore.getState().profile;
-          const redirectPath = profile?.role === "tutor" ? "/tutor/dashboard" : "/dashboard";
-          
-          navigate(redirectPath, { replace: true });
+          navigate(getDashboardPath(profile?.role), { replace: true });
         } else {
           // No session found, redirect to login
           navigate("/login", { replace: true });

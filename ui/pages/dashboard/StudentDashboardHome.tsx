@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import {
@@ -36,46 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/ui/components/shadcn/avat
 import { Progress } from "@/ui/components/shadcn/progress";
 import { Skeleton } from "@/ui/components/shadcn/skeleton";
 import { useAuthStore } from "@/ui/stores/auth.store";
-import { supabase } from "@/ui/lib/supabase";
-
-// Types
-interface UpcomingSession {
-  id: string;
-  tutorName: string;
-  tutorAvatar: string | null;
-  subject: string;
-  scheduledAt: Date;
-  durationMinutes: number;
-  status: string;
-}
-
-interface FavoriteTutor {
-  id: string;
-  name: string;
-  avatar: string | null;
-  specialty: string;
-  rating: number;
-  university: string;
-}
-
-interface DashboardStats {
-  upcomingSessions: number;
-  availableSessions: number;
-  completedSessions: number;
-  averageRating: number;
-}
-
-interface SessionActivity {
-  month: string;
-  sessions: number;
-}
-
-interface SubscriptionInfo {
-  planName: string;
-  planTier: string;
-  sessionsUsed: number;
-  sessionsTotal: number;
-}
+import { useStudentDashboard, type UpcomingSession } from "@/ui/hooks/use-student-dashboard";
 
 // Animation variants
 const containerVariants = {
@@ -147,7 +107,7 @@ function StatsCardSkeleton() {
 // Loading skeleton for session items
 function SessionItemSkeleton() {
   return (
-    <div className="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl bg-muted/50">
+    <div className="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl bg-muted/30">
       <Skeleton className="size-10 md:size-12 rounded-full" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-4 w-32" />
@@ -175,8 +135,8 @@ function EmptyState({
 }) {
   return (
     <div className="text-center py-8">
-      <div className="size-12 mx-auto rounded-full bg-muted/50 flex items-center justify-center mb-3">
-        <Icon className="size-6 text-muted-foreground/50" />
+      <div className="size-12 mx-auto rounded-full bg-muted flex items-center justify-center mb-3">
+        <Icon className="size-6 text-muted-foreground" />
       </div>
       <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
       <p className="text-xs text-muted-foreground/70">{description}</p>
@@ -191,232 +151,65 @@ function EmptyState({
   );
 }
 
+// Session item component
+function SessionItem({ session, index }: { session: UpcomingSession; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+    >
+      <Avatar className="size-10 md:size-12 border-2 border-background shadow-sm shrink-0">
+        <AvatarImage src={session.tutorAvatar || undefined} />
+        <AvatarFallback>{session.tutorName[0]}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <h4 className="font-medium text-sm md:text-base text-foreground truncate">
+            {session.subject}
+          </h4>
+          <Badge variant="secondary" className="text-[10px] md:text-xs shrink-0">
+            {session.durationMinutes} min
+          </Badge>
+        </div>
+        <p className="text-xs md:text-sm text-muted-foreground truncate">
+          con {session.tutorName}
+        </p>
+      </div>
+      <div className="text-right shrink-0">
+        <p className="text-xs md:text-sm font-medium text-primary">
+          {formatTimeUntil(session.scheduledAt)}
+        </p>
+        <p className="text-[10px] md:text-xs text-muted-foreground hidden sm:block">
+          {session.scheduledAt.toLocaleDateString("es", {
+            weekday: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function StudentDashboardHome() {
   const { user, profile } = useAuthStore();
-  
-  // State
-  const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState<DashboardStats>({
+  const { data, isLoading } = useStudentDashboard(user?.id);
+
+  const displayName = profile?.full_name?.split(" ")[0] || "Estudiante";
+
+  // Default values when data is loading or undefined
+  const stats = data?.stats ?? {
     upcomingSessions: 0,
     availableSessions: 0,
     completedSessions: 0,
     averageRating: 0,
-  });
-  const [upcomingSessions, setUpcomingSessions] = useState<UpcomingSession[]>([]);
-  const [favoriteTutors, setFavoriteTutors] = useState<FavoriteTutor[]>([]);
-  const [sessionActivity, setSessionActivity] = useState<SessionActivity[]>([]);
-  const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
-
-  const displayName = profile?.full_name?.split(" ")[0] || "Estudiante";
-
-  // Fetch dashboard data
-  useEffect(() => {
-    if (!user) return;
-
-    const userId = user.id;
-
-    async function fetchDashboardData() {
-      setIsLoading(true);
-      try {
-        // Fetch all data in parallel
-        const [
-          sessionsResult,
-          upcomingResult,
-          favoritesResult,
-          subscriptionResult,
-          reviewsResult,
-        ] = await Promise.all([
-          // Get session counts
-          supabase
-            .from("sessions")
-            .select("id, status, scheduled_at")
-            .eq("student_id", userId),
-          
-          // Get upcoming sessions with tutor info
-          supabase
-            .from("sessions")
-            .select(`
-              id,
-              scheduled_at,
-              duration_minutes,
-              status,
-              subject:subjects(name),
-              tutor:profiles!sessions_tutor_id_fkey(full_name, avatar_url)
-            `)
-            .eq("student_id", userId)
-            .in("status", ["pending", "confirmed"])
-            .gte("scheduled_at", new Date().toISOString())
-            .order("scheduled_at", { ascending: true })
-            .limit(3),
-          
-          // Get favorite tutors
-          supabase
-            .from("favorites")
-            .select(`
-              id,
-              tutor:profiles!favorites_tutor_id_fkey(
-                id,
-                full_name,
-                avatar_url
-              )
-            `)
-            .eq("student_id", userId)
-            .limit(3),
-          
-          // Get active subscription with plan info
-          supabase
-            .from("subscriptions")
-            .select(`
-              id,
-              sessions_remaining,
-              plan:plans(name, tier, sessions_included)
-            `)
-            .eq("user_id", userId)
-            .eq("status", "active")
-            .single(),
-          
-          // Get reviews given by this student (to calculate average rating given)
-          supabase
-            .from("reviews")
-            .select("rating")
-            .eq("student_id", userId),
-        ]);
-
-        // Process sessions data
-        const allSessions = sessionsResult.data || [];
-        const now = new Date();
-        
-        const upcoming = allSessions.filter(s => 
-          (s.status === "pending" || s.status === "confirmed") && 
-          new Date(s.scheduled_at) > now
-        ).length;
-        
-        const completed = allSessions.filter(s => s.status === "completed").length;
-
-        // Calculate session activity for last 6 months
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-        
-        const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-        const activityMap = new Map<string, number>();
-        
-        // Initialize last 6 months with 0
-        for (let i = 5; i >= 0; i--) {
-          const date = new Date();
-          date.setMonth(date.getMonth() - i);
-          activityMap.set(monthNames[date.getMonth()], 0);
-        }
-        
-        // Count sessions per month
-        allSessions
-          .filter(s => s.status === "completed" && new Date(s.scheduled_at) > sixMonthsAgo)
-          .forEach(s => {
-            const month = monthNames[new Date(s.scheduled_at).getMonth()];
-            activityMap.set(month, (activityMap.get(month) || 0) + 1);
-          });
-        
-        const activityData = Array.from(activityMap.entries()).map(([month, sessions]) => ({
-          month,
-          sessions,
-        }));
-
-        // Process upcoming sessions - Supabase returns arrays for relations
-        const processedUpcoming: UpcomingSession[] = (upcomingResult.data || []).map((s) => {
-          // Handle both array and object responses from Supabase
-          const subject = Array.isArray(s.subject) ? s.subject[0] : s.subject;
-          const tutor = Array.isArray(s.tutor) ? s.tutor[0] : s.tutor;
-          
-          return {
-            id: s.id,
-            tutorName: tutor?.full_name || "Tutor",
-            tutorAvatar: tutor?.avatar_url || null,
-            subject: subject?.name || "Sesión",
-            scheduledAt: new Date(s.scheduled_at),
-            durationMinutes: s.duration_minutes,
-            status: s.status,
-          };
-        });
-
-        // Process favorites - need to get tutor_profiles for specialties
-        const processedFavorites: FavoriteTutor[] = [];
-        if (favoritesResult.data && favoritesResult.data.length > 0) {
-          const tutorIds = favoritesResult.data
-            .map((f) => {
-              const tutor = Array.isArray(f.tutor) ? f.tutor[0] : f.tutor;
-              return tutor?.id;
-            })
-            .filter(Boolean);
-          
-          if (tutorIds.length > 0) {
-            const { data: tutorProfiles } = await supabase
-              .from("tutor_profiles")
-              .select("user_id, university, specialties, rating")
-              .in("user_id", tutorIds);
-            
-            const tutorProfileMap = new Map(
-              (tutorProfiles || []).map((tp) => [tp.user_id, tp])
-            );
-            
-            for (const f of favoritesResult.data) {
-              const tutor = Array.isArray(f.tutor) ? f.tutor[0] : f.tutor;
-              if (tutor) {
-                const tutorProfile = tutorProfileMap.get(tutor.id);
-                processedFavorites.push({
-                  id: tutor.id,
-                  name: tutor.full_name,
-                  avatar: tutor.avatar_url,
-                  specialty: tutorProfile?.specialties?.[0] || "Tutor",
-                  rating: tutorProfile?.rating || 0,
-                  university: tutorProfile?.university || "",
-                });
-              }
-            }
-          }
-        }
-
-        // Process subscription
-        let subInfo: SubscriptionInfo | null = null;
-        if (subscriptionResult.data && !subscriptionResult.error) {
-          const sub = subscriptionResult.data;
-          const plan = Array.isArray(sub.plan) ? sub.plan[0] : sub.plan;
-          
-          if (plan) {
-            subInfo = {
-              planName: plan.name || "Plan",
-              planTier: plan.tier || "basic",
-              sessionsUsed: (plan.sessions_included || 0) - sub.sessions_remaining,
-              sessionsTotal: plan.sessions_included || 0,
-            };
-          }
-        }
-
-        // Calculate average rating from reviews
-        const reviews = reviewsResult.data || [];
-        const avgRating = reviews.length > 0
-          ? reviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / reviews.length
-          : 0;
-
-        // Update state
-        setStats({
-          upcomingSessions: upcoming,
-          availableSessions: subscriptionResult.data?.sessions_remaining || 0,
-          completedSessions: completed,
-          averageRating: Math.round(avgRating * 10) / 10,
-        });
-        setUpcomingSessions(processedUpcoming);
-        setFavoriteTutors(processedFavorites);
-        setSessionActivity(activityData);
-        setSubscription(subInfo);
-
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchDashboardData();
-  }, [user]);
+  };
+  const upcomingSessions = data?.upcomingSessions ?? [];
+  const favoriteTutors = data?.favoriteTutors ?? [];
+  const sessionActivity = data?.sessionActivity ?? [];
+  const subscription = data?.subscription ?? null;
 
   const planProgress = subscription 
     ? (subscription.sessionsUsed / subscription.sessionsTotal) * 100 
@@ -491,8 +284,8 @@ export default function StudentDashboardHome() {
             <Card className="relative overflow-hidden">
               <CardContent className="p-3 md:p-4">
                 <div className="flex items-center gap-2 md:gap-3">
-                  <div className="size-8 md:size-10 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
-                    <Clock className="size-4 md:size-5 text-success" />
+                  <div className="size-8 md:size-10 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
+                    <Clock className="size-4 md:size-5 text-green-600" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xl md:text-2xl font-bold text-foreground">
@@ -504,14 +297,14 @@ export default function StudentDashboardHome() {
                   </div>
                 </div>
               </CardContent>
-              <div className="absolute -right-4 -bottom-4 size-16 md:size-20 rounded-full bg-success/5" />
+              <div className="absolute -right-4 -bottom-4 size-16 md:size-20 rounded-full bg-green-500/5" />
             </Card>
 
             <Card className="relative overflow-hidden">
               <CardContent className="p-3 md:p-4">
                 <div className="flex items-center gap-2 md:gap-3">
-                  <div className="size-8 md:size-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                    <GraduationCap className="size-4 md:size-5 text-accent" />
+                  <div className="size-8 md:size-10 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
+                    <GraduationCap className="size-4 md:size-5 text-violet-600" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xl md:text-2xl font-bold text-foreground">
@@ -523,14 +316,14 @@ export default function StudentDashboardHome() {
                   </div>
                 </div>
               </CardContent>
-              <div className="absolute -right-4 -bottom-4 size-16 md:size-20 rounded-full bg-accent/5" />
+              <div className="absolute -right-4 -bottom-4 size-16 md:size-20 rounded-full bg-violet-500/5" />
             </Card>
 
             <Card className="relative overflow-hidden">
               <CardContent className="p-3 md:p-4">
                 <div className="flex items-center gap-2 md:gap-3">
-                  <div className="size-8 md:size-10 rounded-xl bg-warning/10 flex items-center justify-center shrink-0">
-                    <Star className="size-4 md:size-5 text-warning" />
+                  <div className="size-8 md:size-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                    <Star className="size-4 md:size-5 text-amber-500" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xl md:text-2xl font-bold text-foreground">
@@ -542,7 +335,7 @@ export default function StudentDashboardHome() {
                   </div>
                 </div>
               </CardContent>
-              <div className="absolute -right-4 -bottom-4 size-16 md:size-20 rounded-full bg-warning/5" />
+              <div className="absolute -right-4 -bottom-4 size-16 md:size-20 rounded-full bg-amber-500/5" />
             </Card>
           </>
         )}
@@ -582,43 +375,7 @@ export default function StudentDashboardHome() {
                 ) : (
                   <div className="space-y-3">
                     {upcomingSessions.map((session, index) => (
-                      <motion.div
-                        key={session.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
-                      >
-                        <Avatar className="size-10 md:size-12 border-2 border-background shadow-sm shrink-0">
-                          <AvatarImage src={session.tutorAvatar || undefined} />
-                          <AvatarFallback>{session.tutorName[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-medium text-sm md:text-base text-foreground truncate">
-                              {session.subject}
-                            </h4>
-                            <Badge variant="secondary" className="text-[10px] md:text-xs shrink-0">
-                              {session.durationMinutes} min
-                            </Badge>
-                          </div>
-                          <p className="text-xs md:text-sm text-muted-foreground truncate">
-                            con {session.tutorName}
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-xs md:text-sm font-medium text-primary">
-                            {formatTimeUntil(session.scheduledAt)}
-                          </p>
-                          <p className="text-[10px] md:text-xs text-muted-foreground hidden sm:block">
-                            {session.scheduledAt.toLocaleDateString("es", {
-                              weekday: "short",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                        </div>
-                      </motion.div>
+                      <SessionItem key={session.id} session={session} index={index} />
                     ))}
                   </div>
                 )}
@@ -817,7 +574,7 @@ export default function StudentDashboardHome() {
                         </div>
                         {tutor.rating > 0 && (
                           <div className="flex items-center gap-1 shrink-0">
-                            <Star className="size-3 text-warning fill-warning" />
+                            <Star className="size-3 text-amber-500 fill-amber-500" />
                             <span className="text-xs font-medium">{tutor.rating.toFixed(1)}</span>
                           </div>
                         )}

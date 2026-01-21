@@ -6,6 +6,7 @@ import { Button } from "@/ui/components/shadcn/button";
 import { Input } from "@/ui/components/shadcn/input";
 import { Label } from "@/ui/components/shadcn/label";
 import { useAuthStore } from "@/ui/stores/auth.store";
+import { getDashboardPath } from "@/ui/lib/utils";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -22,8 +23,7 @@ export default function LoginPage() {
   // Redirect if already logged in (AuthProvider handles initialization)
   useEffect(() => {
     if (user && profile) {
-      const redirectPath = profile.role === "tutor" ? "/tutor/dashboard" : "/dashboard";
-      navigate(redirectPath, { replace: true });
+      navigate(getDashboardPath(profile.role), { replace: true });
     }
   }, [user, profile, navigate]);
 

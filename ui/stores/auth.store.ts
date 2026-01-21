@@ -59,14 +59,23 @@ export const useAuthStore = create<AuthState>()(
             await get().fetchProfile();
           }
 
-          // Listen for auth changes
-          supabase.auth.onAuthStateChange(async (_event, session) => {
-            set({ user: session?.user ?? null, session });
+          // Listen for auth changes - only process meaningful events
+          supabase.auth.onAuthStateChange(async (event, session) => {
+            // Ignore TOKEN_REFRESHED and other non-meaningful events to prevent
+            // unnecessary re-renders when switching browser tabs
+            if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+              return;
+            }
             
-            if (session) {
-              await get().fetchProfile();
-            } else {
-              set({ profile: null });
+            // Only process actual auth state changes
+            if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+              set({ user: session?.user ?? null, session });
+              
+              if (session) {
+                await get().fetchProfile();
+              } else {
+                set({ profile: null });
+              }
             }
           });
 

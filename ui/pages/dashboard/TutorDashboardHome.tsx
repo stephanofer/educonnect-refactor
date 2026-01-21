@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import {
@@ -39,53 +38,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/ui/components/shadcn/avat
 import { Progress } from "@/ui/components/shadcn/progress";
 import { Skeleton } from "@/ui/components/shadcn/skeleton";
 import { useAuthStore } from "@/ui/stores/auth.store";
-import { supabase } from "@/ui/lib/supabase";
-
-// Types
-interface TodaySession {
-  id: string;
-  studentName: string;
-  studentAvatar: string | null;
-  subject: string;
-  time: string;
-  durationMinutes: number;
-  status: string;
-}
-
-interface RecentReview {
-  id: string;
-  studentName: string;
-  studentAvatar: string | null;
-  rating: number;
-  comment: string | null;
-  tags: string[];
-  createdAt: Date;
-}
-
-interface DashboardStats {
-  todaySessions: number;
-  monthlyEarnings: number;
-  totalStudents: number;
-  averageRating: number;
-  weeklyGrowth: number;
-  completedSessions: number;
-}
-
-interface EarningsData {
-  month: string;
-  earnings: number;
-}
-
-interface SessionsData {
-  day: string;
-  sessions: number;
-}
-
-interface TutorPerformance {
-  responseRate: number;
-  completionRate: number;
-  recommendationRate: number;
-}
+import { useTutorDashboard, type TodaySession } from "@/ui/hooks/use-tutor-dashboard";
 
 // Animation variants
 const containerVariants = {
@@ -143,7 +96,7 @@ function StatsCardSkeleton() {
 // Loading skeleton for session items
 function SessionItemSkeleton() {
   return (
-    <div className="flex items-center gap-4 p-3 rounded-xl bg-muted/50">
+    <div className="flex items-center gap-4 p-3 rounded-xl bg-muted/30">
       <Skeleton className="size-12 rounded-full" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-4 w-32" />
@@ -169,8 +122,8 @@ function EmptyState({
 }) {
   return (
     <div className="text-center py-8">
-      <div className="size-12 mx-auto rounded-full bg-muted/50 flex items-center justify-center mb-3">
-        <Icon className="size-6 text-muted-foreground/50" />
+      <div className="size-12 mx-auto rounded-full bg-muted flex items-center justify-center mb-3">
+        <Icon className="size-6 text-muted-foreground" />
       </div>
       <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
       <p className="text-xs text-muted-foreground/70">{description}</p>
@@ -178,259 +131,72 @@ function EmptyState({
   );
 }
 
+// Session item component
+function SessionItem({ session, index }: { session: TodaySession; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.1 }}
+      className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+    >
+      <Avatar className="size-12 border-2 border-background shadow-sm">
+        <AvatarImage src={session.studentAvatar || undefined} />
+        <AvatarFallback>{session.studentName[0]}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h4 className="font-medium text-foreground truncate">
+            {session.subject}
+          </h4>
+          {session.status === "completed" ? (
+            <CheckCircle2 className="size-4 text-green-600 shrink-0" />
+          ) : (
+            <Badge variant="secondary" className="text-xs">
+              {session.durationMinutes} min
+            </Badge>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground">
+          con {session.studentName}
+        </p>
+      </div>
+      <div className="text-right">
+        <p className="text-sm font-medium text-foreground">
+          {session.time}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {session.status === "completed" ? "Completada" : "Pendiente"}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function TutorDashboardHome() {
   const { user, profile } = useAuthStore();
-  
-  // State
-  const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState<DashboardStats>({
+  const { data, isLoading } = useTutorDashboard(user?.id);
+
+  const displayName = profile?.full_name?.split(" ")[0] || "Tutor";
+
+  // Default values when data is loading or undefined
+  const stats = data?.stats ?? {
     todaySessions: 0,
     monthlyEarnings: 0,
     totalStudents: 0,
     averageRating: 0,
     weeklyGrowth: 0,
     completedSessions: 0,
-  });
-  const [todaysSessions, setTodaysSessions] = useState<TodaySession[]>([]);
-  const [recentReviews, setRecentReviews] = useState<RecentReview[]>([]);
-  const [earningsData, setEarningsData] = useState<EarningsData[]>([]);
-  const [sessionsData, setSessionsData] = useState<SessionsData[]>([]);
-  const [performance, setPerformance] = useState<TutorPerformance>({
+  };
+  const todaysSessions = data?.todaysSessions ?? [];
+  const recentReviews = data?.recentReviews ?? [];
+  const earningsData = data?.earningsData ?? [];
+  const sessionsData = data?.sessionsData ?? [];
+  const performance = data?.performance ?? {
     responseRate: 0,
     completionRate: 0,
     recommendationRate: 0,
-  });
-
-  const displayName = profile?.full_name?.split(" ")[0] || "Tutor";
-
-  // Fetch dashboard data
-  useEffect(() => {
-    if (!user) return;
-
-    const userId = user.id;
-
-    async function fetchDashboardData() {
-      setIsLoading(true);
-      try {
-        // Get today's date range
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        // Get current month range
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-        // Get week range for weekly sessions chart
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - today.getDay());
-
-        // Fetch all data in parallel
-        const [
-          sessionsResult,
-          todaySessionsResult,
-          reviewsResult,
-          tutorProfileResult,
-          paymentsResult,
-        ] = await Promise.all([
-          // Get all sessions for this tutor
-          supabase
-            .from("sessions")
-            .select("id, status, scheduled_at, price, student_id")
-            .eq("tutor_id", userId),
-          
-          // Get today's sessions with student info
-          supabase
-            .from("sessions")
-            .select(`
-              id,
-              scheduled_at,
-              duration_minutes,
-              status,
-              subject:subjects(name),
-              student:profiles!sessions_student_id_fkey(full_name, avatar_url)
-            `)
-            .eq("tutor_id", userId)
-            .gte("scheduled_at", today.toISOString())
-            .lt("scheduled_at", tomorrow.toISOString())
-            .order("scheduled_at", { ascending: true }),
-          
-          // Get recent reviews
-          supabase
-            .from("reviews")
-            .select(`
-              id,
-              rating,
-              comment,
-              tags,
-              created_at,
-              student:profiles!reviews_student_id_fkey(full_name, avatar_url)
-            `)
-            .eq("tutor_id", userId)
-            .order("created_at", { ascending: false })
-            .limit(3),
-          
-          // Get tutor profile for performance metrics
-          supabase
-            .from("tutor_profiles")
-            .select("rating, total_reviews, total_sessions, recommendation_rate")
-            .eq("user_id", userId)
-            .single(),
-          
-          // Get payments for earnings
-          supabase
-            .from("payments")
-            .select("amount, created_at, status")
-            .eq("user_id", userId)
-            .eq("status", "completed")
-            .gte("created_at", new Date(today.getFullYear() - 1, today.getMonth(), 1).toISOString()),
-        ]);
-
-        // Process sessions data
-        const allSessions = sessionsResult.data || [];
-        const completedSessions = allSessions.filter(s => s.status === "completed");
-        
-        // Count unique students
-        const uniqueStudents = new Set(allSessions.map(s => s.student_id)).size;
-        
-        // Today's sessions count
-        const todayCount = (todaySessionsResult.data || []).length;
-        
-        // Calculate monthly earnings from completed session prices
-        const monthlyEarnings = completedSessions
-          .filter(s => {
-            const date = new Date(s.scheduled_at);
-            return date >= monthStart && date <= monthEnd;
-          })
-          .reduce((sum, s) => sum + (s.price || 0), 0);
-
-        // Calculate weekly growth (compare this week vs last week)
-        const lastWeekStart = new Date(weekStart);
-        lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-        
-        const thisWeekSessions = allSessions.filter(s => new Date(s.scheduled_at) >= weekStart).length;
-        const lastWeekSessions = allSessions.filter(s => {
-          const date = new Date(s.scheduled_at);
-          return date >= lastWeekStart && date < weekStart;
-        }).length;
-        
-        const weeklyGrowth = lastWeekSessions > 0 
-          ? Math.round(((thisWeekSessions - lastWeekSessions) / lastWeekSessions) * 100)
-          : 0;
-
-        // Calculate earnings data for last 6 months
-        const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-        const earningsMap = new Map<string, number>();
-        
-        for (let i = 5; i >= 0; i--) {
-          const date = new Date();
-          date.setMonth(date.getMonth() - i);
-          earningsMap.set(monthNames[date.getMonth()], 0);
-        }
-        
-        (paymentsResult.data || []).forEach(p => {
-          const date = new Date(p.created_at);
-          const sixMonthsAgo = new Date();
-          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-          
-          if (date > sixMonthsAgo) {
-            const month = monthNames[date.getMonth()];
-            earningsMap.set(month, (earningsMap.get(month) || 0) + p.amount);
-          }
-        });
-        
-        const processedEarnings = Array.from(earningsMap.entries()).map(([month, earnings]) => ({
-          month,
-          earnings,
-        }));
-
-        // Calculate weekly sessions data
-        const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-        const sessionsMap = new Map<string, number>();
-        dayNames.forEach(day => sessionsMap.set(day, 0));
-        
-        allSessions
-          .filter(s => new Date(s.scheduled_at) >= weekStart)
-          .forEach(s => {
-            const dayIndex = new Date(s.scheduled_at).getDay();
-            const day = dayNames[dayIndex];
-            sessionsMap.set(day, (sessionsMap.get(day) || 0) + 1);
-          });
-        
-        // Reorder to start from Monday
-        const orderedDays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-        const processedSessions = orderedDays.map(day => ({
-          day,
-          sessions: sessionsMap.get(day) || 0,
-        }));
-
-        // Process today's sessions
-        const processedTodaysSessions: TodaySession[] = (todaySessionsResult.data || []).map((s) => {
-          const subject = Array.isArray(s.subject) ? s.subject[0] : s.subject;
-          const student = Array.isArray(s.student) ? s.student[0] : s.student;
-          const scheduledAt = new Date(s.scheduled_at);
-          
-          return {
-            id: s.id,
-            studentName: student?.full_name || "Estudiante",
-            studentAvatar: student?.avatar_url || null,
-            subject: subject?.name || "Sesión",
-            time: scheduledAt.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" }),
-            durationMinutes: s.duration_minutes,
-            status: s.status,
-          };
-        });
-
-        // Process recent reviews
-        const processedReviews: RecentReview[] = (reviewsResult.data || []).map((r) => {
-          const student = Array.isArray(r.student) ? r.student[0] : r.student;
-          
-          return {
-            id: r.id,
-            studentName: student?.full_name || "Estudiante",
-            studentAvatar: student?.avatar_url || null,
-            rating: r.rating,
-            comment: r.comment,
-            tags: r.tags || [],
-            createdAt: new Date(r.created_at),
-          };
-        });
-
-        // Get performance metrics
-        const tutorProfile = tutorProfileResult.data;
-        const completionRate = tutorProfile?.total_sessions 
-          ? Math.round((completedSessions.length / allSessions.length) * 100) || 0
-          : 0;
-
-        // Update state
-        setStats({
-          todaySessions: todayCount,
-          monthlyEarnings,
-          totalStudents: uniqueStudents,
-          averageRating: tutorProfile?.rating || 0,
-          weeklyGrowth,
-          completedSessions: completedSessions.length,
-        });
-        setTodaysSessions(processedTodaysSessions);
-        setRecentReviews(processedReviews);
-        setEarningsData(processedEarnings);
-        setSessionsData(processedSessions);
-        setPerformance({
-          responseRate: 95, // TODO: Calculate from actual data
-          completionRate,
-          recommendationRate: tutorProfile?.recommendation_rate || 0,
-        });
-
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchDashboardData();
-  }, [user]);
+  };
 
   return (
     <motion.div
@@ -499,8 +265,8 @@ export default function TutorDashboardHome() {
             <Card className="relative overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-xl bg-success/10 flex items-center justify-center">
-                    <DollarSign className="size-5 text-success" />
+                  <div className="size-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                    <DollarSign className="size-5 text-green-600" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">
@@ -511,20 +277,20 @@ export default function TutorDashboardHome() {
                 </div>
                 {stats.weeklyGrowth !== 0 && (
                   <div className="absolute top-2 right-2">
-                    <Badge variant="secondary" className={`text-xs ${stats.weeklyGrowth > 0 ? "text-success" : "text-destructive"}`}>
+                    <Badge variant="secondary" className={`text-xs ${stats.weeklyGrowth > 0 ? "text-green-600" : "text-red-600"}`}>
                       {stats.weeklyGrowth > 0 ? "+" : ""}{stats.weeklyGrowth}%
                     </Badge>
                   </div>
                 )}
               </CardContent>
-              <div className="absolute -right-4 -bottom-4 size-20 rounded-full bg-success/5" />
+              <div className="absolute -right-4 -bottom-4 size-20 rounded-full bg-green-500/5" />
             </Card>
 
             <Card className="relative overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                    <Users className="size-5 text-accent" />
+                  <div className="size-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                    <Users className="size-5 text-violet-600" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">
@@ -534,14 +300,14 @@ export default function TutorDashboardHome() {
                   </div>
                 </div>
               </CardContent>
-              <div className="absolute -right-4 -bottom-4 size-20 rounded-full bg-accent/5" />
+              <div className="absolute -right-4 -bottom-4 size-20 rounded-full bg-violet-500/5" />
             </Card>
 
             <Card className="relative overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-xl bg-warning/10 flex items-center justify-center">
-                    <Star className="size-5 text-warning" />
+                  <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                    <Star className="size-5 text-amber-500" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">
@@ -551,7 +317,7 @@ export default function TutorDashboardHome() {
                   </div>
                 </div>
               </CardContent>
-              <div className="absolute -right-4 -bottom-4 size-20 rounded-full bg-warning/5" />
+              <div className="absolute -right-4 -bottom-4 size-20 rounded-full bg-amber-500/5" />
             </Card>
           </>
         )}
@@ -590,43 +356,7 @@ export default function TutorDashboardHome() {
                 ) : (
                   <div className="space-y-3">
                     {todaysSessions.map((session, index) => (
-                      <motion.div
-                        key={session.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
-                      >
-                        <Avatar className="size-12 border-2 border-background shadow-sm">
-                          <AvatarImage src={session.studentAvatar || undefined} />
-                          <AvatarFallback>{session.studentName[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium text-foreground truncate">
-                              {session.subject}
-                            </h4>
-                            {session.status === "completed" ? (
-                              <CheckCircle2 className="size-4 text-success shrink-0" />
-                            ) : (
-                              <Badge variant="secondary" className="text-xs">
-                                {session.durationMinutes} min
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            con {session.studentName}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-foreground">
-                            {session.time}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {session.status === "completed" ? "Completada" : "Pendiente"}
-                          </p>
-                        </div>
-                      </motion.div>
+                      <SessionItem key={session.id} session={session} index={index} />
                     ))}
                   </div>
                 )}
@@ -679,7 +409,7 @@ export default function TutorDashboardHome() {
                         <Bar
                           dataKey="earnings"
                           name="earnings"
-                          fill="hsl(var(--success))"
+                          fill="hsl(142.1 76.2% 36.3%)"
                           radius={[4, 4, 0, 0]}
                         />
                       </BarChart>
@@ -852,7 +582,7 @@ export default function TutorDashboardHome() {
                                   key={i}
                                   className={`size-3 ${
                                     i < review.rating
-                                      ? "text-warning fill-warning"
+                                      ? "text-amber-500 fill-amber-500"
                                       : "text-muted"
                                   }`}
                                 />
@@ -920,10 +650,10 @@ export default function TutorDashboardHome() {
           {/* Complete Profile Alert */}
           {!profile?.onboarding_completed && (
             <motion.div variants={itemVariants}>
-              <Card className="border-warning/50 bg-warning/5">
+              <Card className="border-amber-500/50 bg-amber-500/5">
                 <CardContent className="p-4">
                   <div className="flex gap-3">
-                    <AlertCircle className="size-5 text-warning shrink-0 mt-0.5" />
+                    <AlertCircle className="size-5 text-amber-500 shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-medium text-foreground">
                         Completa tu perfil

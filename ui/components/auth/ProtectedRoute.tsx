@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router";
 import { useAuthStore, type UserRole } from "@/ui/stores/auth.store";
+import { getDashboardPath } from "@/ui/lib/utils";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -32,8 +33,7 @@ export function ProtectedRoute({
   if (allowedRoles && allowedRoles.length > 0 && profile) {
     if (!allowedRoles.includes(profile.role)) {
       // Redirect to appropriate dashboard based on user role
-      const roleDashboard = profile.role === "tutor" ? "/tutor/dashboard" : "/dashboard";
-      return <Navigate to={roleDashboard} replace />;
+      return <Navigate to={getDashboardPath(profile.role)} replace />;
     }
   }
 

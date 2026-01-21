@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router";
-import { PublicLayout, DashboardLayout } from "@/ui/components/layout";
+import { PublicLayout, DashboardLayout, AdminLayout } from "@/ui/components/layout";
 import { ProtectedRoute } from "@/ui/components/auth";
 import HomePage from "@/ui/pages/HomePage";
 import LoginPage from "@/ui/pages/LoginPage";
@@ -27,6 +27,10 @@ import TutorAvailabilityPage from "@/ui/pages/tutor/TutorAvailabilityPage";
 import TutorEarningsPage from "@/ui/pages/tutor/TutorEarningsPage";
 import TutorStudentsPage from "@/ui/pages/tutor/TutorStudentsPage";
 import TutorReviewsPage from "@/ui/pages/tutor/TutorReviewsPage";
+
+// Admin Pages
+import AdminDashboardPage from "@/ui/pages/admin/AdminDashboardPage";
+import AdminLibraryPage from "@/ui/pages/admin/AdminLibraryPage";
 
 export const router = createBrowserRouter([
   // Public routes with layout
@@ -155,6 +159,26 @@ export const router = createBrowserRouter([
       {
         path: "perfil",
         element: <ProfilePage />,
+      },
+    ],
+  },
+
+  // Protected routes - Admin Dashboard
+  {
+    path: "/admin",
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <AdminDashboardPage />,
+      },
+      {
+        path: "biblioteca",
+        element: <AdminLibraryPage />,
       },
     ],
   },

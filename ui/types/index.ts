@@ -135,20 +135,54 @@ export interface Notification {
 }
 
 // Library/Material types
-export type MaterialType = 'pdf' | 'video' | 'link' | 'document';
+const MATERIAL_TYPE = {
+  PDF: 'pdf',
+  VIDEO: 'video',
+  LINK: 'link',
+  DOCUMENT: 'document',
+  IMAGE: 'image',
+} as const;
+
+export type MaterialType = (typeof MATERIAL_TYPE)[keyof typeof MATERIAL_TYPE];
+export { MATERIAL_TYPE };
+
+// Material categories for filtering
+const MATERIAL_CATEGORY = {
+  MATEMATICAS: 'matematicas',
+  CIENCIAS: 'ciencias',
+  PROGRAMACION: 'programacion',
+  IDIOMAS: 'idiomas',
+  HUMANIDADES: 'humanidades',
+  NEGOCIOS: 'negocios',
+  OTROS: 'otros',
+} as const;
+
+export type MaterialCategory = (typeof MATERIAL_CATEGORY)[keyof typeof MATERIAL_CATEGORY];
+export { MATERIAL_CATEGORY };
 
 export interface Material {
   id: string;
-  tutor_id: string;
+  tutor_id?: string;
   session_id?: string;
+  uploaded_by?: string;
   title: string;
   description?: string;
   type: MaterialType;
   file_url?: string;
+  file_size?: number;
   external_url?: string;
+  thumbnail_url?: string;
   subject_id?: string;
+  category?: MaterialCategory;
   is_public: boolean;
+  download_count: number;
   created_at: string;
+  updated_at: string;
+}
+
+// Material with subject info for display
+export interface MaterialWithSubject extends Material {
+  subject?: Subject;
 }
 
 // Availability types
