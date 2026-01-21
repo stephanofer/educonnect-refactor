@@ -15,6 +15,7 @@ import SearchTutorsPage from "@/ui/pages/dashboard/SearchTutorsPage";
 import MySessionsPage from "@/ui/pages/dashboard/MySessionsPage";
 import MaterialsPage from "@/ui/pages/dashboard/MaterialsPage";
 import LibraryPage from "@/ui/pages/dashboard/LibraryPage";
+import ProfesorChatPage from "@/ui/pages/dashboard/ProfesorChatPage";
 import PlansPage from "@/ui/pages/dashboard/PlansPage";
 import NotificationsPage from "@/ui/pages/dashboard/NotificationsPage";
 import SettingsPage from "@/ui/pages/dashboard/SettingsPage";
@@ -31,6 +32,9 @@ import TutorReviewsPage from "@/ui/pages/tutor/TutorReviewsPage";
 // Admin Pages
 import AdminDashboardPage from "@/ui/pages/admin/AdminDashboardPage";
 import AdminLibraryPage from "@/ui/pages/admin/AdminLibraryPage";
+
+// Video Call Page
+import VideoCallPage from "@/ui/pages/call/VideoCallPage";
 
 export const router = createBrowserRouter([
   // Public routes with layout
@@ -99,6 +103,10 @@ export const router = createBrowserRouter([
       {
         path: "biblioteca",
         element: <LibraryPage />,
+      },
+      {
+        path: "profesor-chat",
+        element: <ProfesorChatPage />,
       },
       {
         path: "planes",
@@ -181,5 +189,15 @@ export const router = createBrowserRouter([
         element: <AdminLibraryPage />,
       },
     ],
+  },
+
+  // Video Call - accessible by both students and tutors
+  {
+    path: "/sala/:sessionId",
+    element: (
+      <ProtectedRoute allowedRoles={["student", "tutor", "admin"]}>
+        <VideoCallPage />
+      </ProtectedRoute>
+    ),
   },
 ]);

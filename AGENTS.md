@@ -24,7 +24,6 @@ Funcionalidades
 **2. Dashboard Estudiante:**
 - Vista de próximas sesiones con countdown
 - Historial de sesiones completadas
-- Acceso rápido a grabaciones y resúmenes
 - Indicador de sesiones restantes del plan actual
 
 **3. Búsqueda y Filtrado de Tutores:**
@@ -180,4 +179,80 @@ api/
 
 For references imports use `@/ui` for componente `ui` and use `@/api` for component `api` 
 
+---
+
+## ⚠️ Common Pitfalls & Known Issues
+
+### 1. **Auth State Management - Cache & Listeners**
+
+**CRITICAL:** When working with authentication:
+
+- **ALWAYS clear TanStack Query cache on logout** - Use `queryClient.clear()` in signOut
+- **NEVER register listeners without cleanup** - Store Supabase auth subscription and unsubscribe
+- **PREVENT double initialization** - Check `isInitialized` before running initialize() (React Strict Mode)
+
+```typescript
+// ✅ CORRECT
+signOut: async () => {
+  await supabase.auth.signOut();
+  queryClient.clear(); // Prevents stale cached data
+  set({ user: null, session: null, profile: null });
+}
+
+// ❌ WRONG - leaves cached queries
+signOut: async () => {
+  await supabase.auth.signOut();
+  set({ user: null, session: null, profile: null });
+}
+```
+
+### 2. **Motion AnimatePresence - Route Transitions**
+
+**DO NOT use `mode="wait"`** with route transitions - it causes pages to get stuck in loading if animations fail.
+
+```typescript
+// ✅ CORRECT - Robust for routing
+<AnimatePresence mode="popLayout" initial={false}>
+  <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+    <Outlet />
+  </motion.div>
+</AnimatePresence>
+
+// ❌ WRONG - Can cause infinite loading
+<AnimatePresence mode="wait">
+  <motion.div key={location.pathname}>
+    <Outlet />
+  </motion.div>
+</AnimatePresence>
+```
+
+### 3. **Protected Routes - Loading States**
+
+**NEVER return `null`** during loading - it confuses AnimatePresence and causes layout shift.
+
+```typescript
+// ✅ CORRECT - Consistent UI
+if (isLoading) {
+  return <div className="min-h-[50vh] flex items-center justify-center">
+    <Loader2 className="animate-spin" />
+  </div>;
+}
+
+// ❌ WRONG - Causes AnimatePresence issues
+if (isLoading) {
+  return null;
+}
+```
+
+### 4. **QueryClient Instance**
+
+**ALWAYS export queryClient from a centralized file** (`ui/lib/query-client.ts`) so it can be accessed by stores, hooks, and main.tsx.
+
+```typescript
+// ✅ CORRECT - Centralized in ui/lib/query-client.ts
+export const queryClient = new QueryClient({ ... });
+
+// Then import in auth.store.ts, main.tsx, etc.
+import { queryClient } from "@/ui/lib/query-client";
+```
 

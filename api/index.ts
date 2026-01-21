@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { ChatController } from "@/api/controllers/chat.controller";
+import { ProfesorBotController } from "@/api/controllers/profesor-bot.controller";
 
 type Env = {
   AI: Ai;
@@ -15,9 +16,13 @@ app.use("*", cors({
   credentials: true,
 }));
 
-// Chat routes
+// Chat routes (EduBot - Asistente general)
 app.post("/api/chat", ChatController.chat);
 app.get("/api/chat/health", ChatController.health);
+
+// Profesor Bot routes (Tutor académico)
+app.post("/api/profesor-bot", ProfesorBotController.chat);
+app.get("/api/profesor-bot/health", ProfesorBotController.health);
 
 // Error handlers
 app.notFound((c) => c.json({ error: "Not Found" }, 404));

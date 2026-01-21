@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User, Session } from "@supabase/supabase-js";
+import type { User, Session, Subscription } from "@supabase/supabase-js";
 import { supabase, isSupabaseConfigured } from "@/ui/lib/supabase";
+import { queryClient } from "@/ui/lib/query-client";
 
 export type UserRole = "student" | "tutor" | "admin";
 
@@ -32,6 +33,9 @@ interface AuthState {
   clearError: () => void;
 }
 
+// Store subscription outside of Zustand to prevent multiple listeners
+let authSubscription: Subscription | null = null;
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -43,6 +47,11 @@ export const useAuthStore = create<AuthState>()(
       error: null,
 
       initialize: async () => {
+        // Prevent multiple initializations (React Strict Mode calls this twice)
+        if (get().isInitialized) {
+          return;
+        }
+
         if (!isSupabaseConfigured()) {
           set({ isLoading: false, isInitialized: true });
           return;
@@ -59,8 +68,14 @@ export const useAuthStore = create<AuthState>()(
             await get().fetchProfile();
           }
 
+          // Cleanup existing subscription if any (safety check)
+          if (authSubscription) {
+            authSubscription.unsubscribe();
+            authSubscription = null;
+          }
+
           // Listen for auth changes - only process meaningful events
-          supabase.auth.onAuthStateChange(async (event, session) => {
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             // Ignore TOKEN_REFRESHED and other non-meaningful events to prevent
             // unnecessary re-renders when switching browser tabs
             if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
@@ -78,6 +93,9 @@ export const useAuthStore = create<AuthState>()(
               }
             }
           });
+
+          // Store subscription for potential cleanup
+          authSubscription = subscription;
 
           set({ isLoading: false, isInitialized: true });
         } catch (error) {
@@ -153,6 +171,8 @@ export const useAuthStore = create<AuthState>()(
           if (isSupabaseConfigured()) {
             await supabase.auth.signOut();
           }
+          // Clear TanStack Query cache to prevent stale data
+          queryClient.clear();
           set({ user: null, session: null, profile: null, isLoading: false });
         } catch (error) {
           console.error("Sign out error:", error);

@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from "react-router";
+import { Loader2 } from "lucide-react";
 import { useAuthStore, type UserRole } from "@/ui/stores/auth.store";
 import { getDashboardPath } from "@/ui/lib/utils";
 
@@ -24,9 +25,13 @@ export function ProtectedRoute({
   }
 
   // Still loading profile after sign-in (brief moment)
-  // This is a very short state, user exists but profile is loading
+  // Show a consistent loading state instead of null to prevent AnimatePresence issues
   if (isLoading) {
-    return null; // Or a minimal spinner if preferred
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
   }
 
   // Check role-based access if roles are specified

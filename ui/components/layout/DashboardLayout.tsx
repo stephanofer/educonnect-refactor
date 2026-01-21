@@ -15,6 +15,7 @@ import {
   Users,
   Library,
   User,
+  Bot,
 } from "lucide-react";
 import {
   Sidebar,
@@ -70,6 +71,11 @@ const studentNavItems = [
     title: "Biblioteca",
     icon: Library,
     path: "/dashboard/biblioteca",
+  },
+  {
+    title: "Profesor EduBot",
+    icon: Bot,
+    path: "/dashboard/profesor-chat",
   },
   {
     title: "Mis Planes",
@@ -298,13 +304,13 @@ export function DashboardLayout({ role }: DashboardLayoutProps) {
 
         {/* Page Content */}
         <main className="flex-1 overflow-auto">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="popLayout" initial={false}>
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               className="p-4 md:p-6 lg:p-8"
             >
               <Outlet />
