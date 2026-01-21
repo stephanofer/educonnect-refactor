@@ -1,0 +1,183 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Font family */
+@theme inline {
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  /* EduConnect Custom Theme */
+  --radius: 0.75rem; /* 12px for cards, slightly smaller for buttons */
+  
+  /* Primary: Indigo vibrante #4F46E5 */
+  --primary: #4F46E5;
+  --primary-foreground: #FFFFFF;
+  
+  /* Secondary/Accent: Cyan #06B6D4 */
+  --secondary: #E0F2FE;
+  --secondary-foreground: #0369A1;
+  --accent: #06B6D4;
+  --accent-foreground: #FFFFFF;
+  
+  /* Success: Verde #10B981 */
+  --success: #10B981;
+  --success-foreground: #FFFFFF;
+  
+  /* Backgrounds */
+  --background: #F9FAFB; /* Gris muy claro */
+  --foreground: #111827; /* Texto principal - gris oscuro */
+  
+  /* Cards */
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  
+  /* Popover */
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
+  
+  /* Muted */
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280; /* Texto secundario */
+  
+  /* Destructive */
+  --destructive: #EF4444;
+  
+  /* Borders */
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #4F46E5;
+  
+  /* Charts */
+  --chart-1: #4F46E5;
+  --chart-2: #06B6D4;
+  --chart-3: #10B981;
+  --chart-4: #F59E0B;
+  --chart-5: #EF4444;
+  
+  /* Sidebar */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #4F46E5;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F3F4F6;
+  --sidebar-accent-foreground: #111827;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #4F46E5;
+}
+
+.dark {
+  /* Dark mode - keeping similar structure but inverted */
+  --background: #0F172A;
+  --foreground: #F9FAFB;
+  
+  --card: #1E293B;
+  --card-foreground: #F9FAFB;
+  
+  --popover: #1E293B;
+  --popover-foreground: #F9FAFB;
+  
+  --primary: #6366F1;
+  --primary-foreground: #FFFFFF;
+  
+  --secondary: #1E3A5F;
+  --secondary-foreground: #7DD3FC;
+  
+  --accent: #22D3EE;
+  --accent-foreground: #0F172A;
+  
+  --success: #34D399;
+  --success-foreground: #0F172A;
+  
+  --muted: #334155;
+  --muted-foreground: #94A3B8;
+  
+  --destructive: #F87171;
+  
+  --border: #334155;
+  --input: #334155;
+  --ring: #6366F1;
+  
+  --chart-1: #818CF8;
+  --chart-2: #22D3EE;
+  --chart-3: #34D399;
+  --chart-4: #FBBF24;
+  --chart-5: #F87171;
+  
+  --sidebar: #1E293B;
+  --sidebar-foreground: #F9FAFB;
+  --sidebar-primary: #818CF8;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #F9FAFB;
+  --sidebar-border: #334155;
+  --sidebar-ring: #6366F1;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* Custom utility classes for EduConnect */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+  
+  .shadow-soft {
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05), 0 4px 16px -4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shadow-hover {
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.15);
+  }
+}

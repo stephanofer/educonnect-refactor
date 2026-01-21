@@ -1,0 +1,11 @@
+export { default as StudentDashboardHome } from "./StudentDashboardHome";
+export { default as SearchTutorsPage } from "./SearchTutorsPage";
+export { default as MySessionsPage } from "./MySessionsPage";
+export { default as RecordingsPage } from "./RecordingsPage";
+export { default as MaterialsPage } from "./MaterialsPage";
+export { default as LibraryPage } from "./LibraryPage";
+export { default as PlansPage } from "./PlansPage";
+export { default as NotificationsPage } from "./NotificationsPage";
+export { default as SettingsPage } from "./SettingsPage";
+export { default as ProfilePage } from "./ProfilePage";
+export { default as TutorDashboardHome } from "./TutorDashboardHome";
