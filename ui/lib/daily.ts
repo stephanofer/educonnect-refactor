@@ -98,11 +98,11 @@ export const TEST_SESSION = {
   status: "confirmed" as const,
   scheduledAt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago (can join now)
   durationMinutes: 60,
-  description: "Sesión de prueba para testing de videollamada",
-  subjectName: "Testing Daily.co",
+  description: "Sesión de prueba para que prueben las sesiones de educonnect ",
+  subjectName: "Matematicas",
   // For student view
   tutorId: "test-tutor",
-  tutorName: "Tutor de Prueba",
+  tutorName: "Hector Vega Magallanes",
   tutorAvatar: null,
   // For tutor view  
   studentId: "test-student",
