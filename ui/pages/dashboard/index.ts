@@ -1,7 +1,6 @@
 export { default as StudentDashboardHome } from "./StudentDashboardHome";
 export { default as SearchTutorsPage } from "./SearchTutorsPage";
 export { default as MySessionsPage } from "./MySessionsPage";
-export { default as RecordingsPage } from "./RecordingsPage";
 export { default as MaterialsPage } from "./MaterialsPage";
 export { default as LibraryPage } from "./LibraryPage";
 export { default as PlansPage } from "./PlansPage";
