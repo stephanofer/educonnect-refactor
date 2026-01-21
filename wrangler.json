@@ -11,6 +11,10 @@
   "observability": {
     "enabled": true
   },
+  "vars": {
+    "VITE_SUPABASE_URL": "https://uoohxiiebytdfaetxexq.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvb2h4aWllYnl0ZGZhZXR4ZXhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTc1NTIsImV4cCI6MjA4NDU5MzU1Mn0.FrYmCLmyrayWYNSIo3ARSJNpmR_DC2kSdRwo79sasM8"
+  },
   "ai": {
     "binding": "AI",
     "remote": true
