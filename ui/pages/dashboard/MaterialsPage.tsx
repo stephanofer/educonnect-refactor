@@ -19,7 +19,7 @@ import {
   type StudentSessionWithMaterials,
   type SessionMaterial,
 } from "@/ui/features/materials";
-import { MaterialCard, MaterialCardSkeleton, EmptyMaterials } from "@/ui/features/materials";
+import { MaterialCard, MaterialCardSkeleton, DemoSessionMaterials } from "@/ui/features/materials";
 
 export default function MaterialsPage() {
   const navigate = useNavigate();
@@ -82,22 +82,29 @@ export default function MaterialsPage() {
       {/* Content */}
       {isLoading ? (
         <MaterialsLoading />
-      ) : !sessionsWithMaterials || sessionsWithMaterials.length === 0 ? (
-        <EmptyMaterials onSearchTutors={handleSearchTutors} />
       ) : (
-        <div className="space-y-4">
-          {sessionsWithMaterials.map((session, index) => (
-            <SessionMaterialsCard
-              key={session.sessionId}
-              session={session}
-              index={index}
-              isExpanded={expandedSessions.has(session.sessionId)}
-              isHighlighted={session.sessionId === highlightedSessionId}
-              onToggle={() => toggleSession(session.sessionId)}
-              onDownload={handleDownload}
-            />
-          ))}
-        </div>
+        <>
+          {/* Demo session - always visible */}
+          <DemoSessionMaterials onSearchTutors={handleSearchTutors} />
+
+          {/* Real sessions */}
+          {sessionsWithMaterials && sessionsWithMaterials.length > 0 ? (
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-foreground">Tus sesiones</h2>
+              {sessionsWithMaterials.map((session, index) => (
+                <SessionMaterialsCard
+                  key={session.sessionId}
+                  session={session}
+                  index={index}
+                  isExpanded={expandedSessions.has(session.sessionId)}
+                  isHighlighted={session.sessionId === highlightedSessionId}
+                  onToggle={() => toggleSession(session.sessionId)}
+                  onDownload={handleDownload}
+                />
+              ))}
+            </div>
+          ) : null}
+        </>
       )}
     </div>
   );
