@@ -98,17 +98,17 @@ export const TEST_SESSION = {
   status: "confirmed" as const,
   scheduledAt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago (can join now)
   durationMinutes: 60,
-  description: "Sesión de prueba para que prueben las sesiones de educonnect ",
-  subjectName: "Matematicas",
+  description: "Repaso intensivo de Cálculo Diferencial: derivadas parciales, regla de la cadena y aplicaciones a problemas de optimización. Traer ejercicios del capítulo 14 resueltos para revisión.",
+  subjectName: "Cálculo Diferencial",
   // For student view
   tutorId: "test-tutor",
-  tutorName: "Hector Vega Magallanes",
-  tutorAvatar: null,
+  tutorName: "Héctor Vega Magallanes",
+  tutorAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
   // For tutor view  
   studentId: "test-student",
-  studentName: "Estudiante de Prueba",
-  studentAvatar: null,
+  studentName: "María López Castillo",
+  studentAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face",
   // Extras
-  hasMaterials: false,
-  materialsCount: 0,
+  hasMaterials: true,
+  materialsCount: 3,
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "motion/react";
 import { Library, RefreshCw } from "lucide-react";
 import { Button } from "@/ui/components/shadcn/button";
@@ -13,19 +13,25 @@ import {
   EmptyLibrary,
 } from "@/ui/features/library";
 import {
-  useLibraryMaterials,
   useTrackDownload,
-  useSubjects,
   type LibraryFilters,
   type LibraryMaterial,
 } from "@/ui/features/library/hooks";
+import {
+  MOCK_LIBRARY_MATERIALS,
+  MOCK_SUBJECTS,
+} from "@/ui/features/library/mock-data";
 
 export default function LibraryPage() {
   const { user } = useAuthStore();
-  const { subscription, fetchSubscription, isLoading: subscriptionLoading } = useSubscriptionStore();
-  
+  const {
+    subscription,
+    fetchSubscription,
+    isLoading: subscriptionLoading,
+  } = useSubscriptionStore();
+
   const [filters, setFilters] = useState<LibraryFilters>({});
-  
+
   // Fetch subscription on mount
   useEffect(() => {
     if (user?.id) {
@@ -33,23 +39,46 @@ export default function LibraryPage() {
     }
   }, [user?.id, fetchSubscription]);
 
-  // Fetch materials and subjects
-  const { 
-    data: materials, 
-    isLoading: materialsLoading, 
-    refetch,
-    isRefetching 
-  } = useLibraryMaterials(filters);
-  
-  const { data: subjects } = useSubjects();
   const trackDownload = useTrackDownload();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Check if user has active subscription
   const hasActivePlan = subscription?.status === "active";
-  
+
+  // Use mock subjects for filter dropdowns
+  const subjects = MOCK_SUBJECTS;
+
+  // Client-side filtering for mock data
+  const materials = useMemo(() => {
+    let result: LibraryMaterial[] = MOCK_LIBRARY_MATERIALS;
+
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      result = result.filter(
+        (m) =>
+          m.title.toLowerCase().includes(q) ||
+          m.description?.toLowerCase().includes(q) ||
+          m.subject?.name.toLowerCase().includes(q)
+      );
+    }
+    if (filters.type) {
+      result = result.filter((m) => m.type === filters.type);
+    }
+    if (filters.category) {
+      result = result.filter((m) => m.category === filters.category);
+    }
+    if (filters.subjectId) {
+      result = result.filter((m) => m.subject_id === filters.subjectId);
+    }
+
+    return result;
+  }, [filters]);
+
   // Handle download tracking
   const handleDownload = (material: LibraryMaterial) => {
-    trackDownload.mutate(material.id);
+    if (!material.id.startsWith("mock-")) {
+      trackDownload.mutate(material.id);
+    }
   };
 
   // Clear all filters
@@ -67,15 +96,17 @@ export default function LibraryPage() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/10 p-2">
+          <div className="rounded-xl bg-primary/10 p-2.5">
             <Library className="size-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Biblioteca Virtual</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Biblioteca Virtual
+            </h1>
             <p className="text-muted-foreground">Verificando acceso...</p>
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <MaterialCardSkeleton count={8} />
         </div>
       </div>
@@ -97,14 +128,14 @@ export default function LibraryPage() {
           className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary/10 p-2">
+            <div className="rounded-xl bg-primary/10 p-2.5">
               <Library className="size-6 text-primary" />
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
                 Biblioteca Virtual
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Material de estudio exclusivo para suscriptores
               </p>
             </div>
@@ -114,11 +145,17 @@ export default function LibraryPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch()}
-            disabled={isRefetching}
-            className="gap-2 self-start sm:self-auto"
+            onClick={async () => {
+              setIsRefreshing(true);
+              await new Promise((r) => setTimeout(r, 800));
+              setIsRefreshing(false);
+            }}
+            disabled={isRefreshing}
+            className="gap-2 self-start sm:self-auto rounded-lg"
           >
-            <RefreshCw className={`size-4 ${isRefetching ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`size-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             Actualizar
           </Button>
         </motion.div>
@@ -138,16 +175,17 @@ export default function LibraryPage() {
         </motion.div>
 
         {/* Materials Grid */}
-        {materialsLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {materials.length === 0 && !hasActiveFilters ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <MaterialCardSkeleton count={8} />
           </div>
         ) : materials && materials.length > 0 ? (
           <motion.div
+            key={JSON.stringify(filters)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            transition={{ delay: 0.15 }}
+            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           >
             {materials.map((material, index) => (
               <MaterialCard

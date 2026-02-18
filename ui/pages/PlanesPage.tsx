@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { motion } from "motion/react";
-import { Check, Zap, Crown, Rocket, ArrowRight } from "lucide-react";
+import { Check, Zap, Crown, Rocket, ArrowRight, ShieldCheck, Clock, RefreshCcw, MessageCircle } from "lucide-react";
 import { Button } from "@/ui/components/shadcn/button";
 
 const plans = [
@@ -31,7 +31,6 @@ const plans = [
     color: "bg-primary",
     features: [
       "5 sesiones de 1 hora incluidas",
-      "Grabaciones ilimitadas",
       "Resumenes generados por IA",
       "Chat prioritario 24/7",
       "Plan de estudio personalizado",
@@ -80,6 +79,10 @@ const faqs = [
   {
     question: "Que metodos de pago aceptan?",
     answer: "Aceptamos Yape, Plin, tarjetas Visa y Mastercard, y transferencias bancarias.",
+  },
+  {
+    question: "Como funciona la politica de devolucion?",
+    answer: "Si el tutor no cumplio tus expectativas, tienes 24 horas despues de la sesion para solicitar una devolucion completa. Solo contactanos por chat o email y procesamos tu reembolso en menos de 2 horas.",
   },
 ];
 
@@ -235,13 +238,96 @@ export default function PlanesPage() {
         </div>
       </section>
 
-      {/* Comparison note */}
-      <section className="py-8">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-muted-foreground">
-            Todos los planes incluyen: grabaciones automaticas, acceso a la plataforma 24/7,
-            y soporte tecnico. <span className="font-medium text-foreground">Primera sesion con 50% de descuento.</span>
-          </p>
+
+      {/* Refund Guarantee */}
+      <section className="py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-teal-50 border border-emerald-200/60 shadow-lg"
+          >
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100/40 rounded-full -translate-y-1/2 translate-x-1/3" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-100/30 rounded-full translate-y-1/2 -translate-x-1/4" />
+
+            <div className="relative p-8 sm:p-12">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+                <div className="size-14 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                  <ShieldCheck className="size-7 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
+                    Garantia de satisfaccion
+                  </h2>
+                  <p className="text-muted-foreground mt-1">
+                    Tu tranquilidad es nuestra prioridad
+                  </p>
+                </div>
+              </div>
+
+              {/* Policy description */}
+              <p className="text-muted-foreground leading-relaxed mb-8 max-w-3xl">
+                Creemos en la calidad de nuestros tutores. Si despues de tu sesion
+                sientes que el tutor no cumplio tus expectativas, te devolvemos el
+                100% de tu sesion. Sin preguntas, sin complicaciones.
+              </p>
+
+              {/* Policy points */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                <div className="flex items-start gap-3 bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100">
+                  <div className="size-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Clock className="size-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">Solicita en 24 horas</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Tienes hasta 24 horas despues de la sesion para solicitar tu devolucion
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100">
+                  <div className="size-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <RefreshCcw className="size-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">Devolucion completa</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Se te reembolsa la sesion completa a tu saldo o metodo de pago original
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 bg-white/70 backdrop-blur-sm rounded-2xl p-4 border border-emerald-100 sm:col-span-2 lg:col-span-1">
+                  <div className="size-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="size-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">Sin complicaciones</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Solo contactanos por chat o email y procesamos tu solicitud al instante
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust badge */}
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className="size-2 rounded-full bg-emerald-500" />
+                  <span>Tiempo promedio: menos de 2 horas</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="size-2 rounded-full bg-emerald-500" />
+                  <span>98% de satisfaccion post-resolucion</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 

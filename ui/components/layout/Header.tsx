@@ -16,6 +16,7 @@ import { useAuthStore } from "@/ui/stores/auth.store";
 const navLinks = [
   { href: "/", label: "Inicio" },
   { href: "/planes", label: "Planes" },
+  { href: "/recursos", label: "Recursos" },
   { href: "/para-tutores", label: "Para Tutores" },
 ];
 
@@ -52,7 +53,7 @@ export function Header() {
                     <img
                       src="/logo.svg"
                       alt="Logo educonnect"
-                      className="w-50 h-20 "
+                      className="h-15 w-auto"
                     />
           </Link>
 

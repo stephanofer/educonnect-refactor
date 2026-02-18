@@ -7,6 +7,8 @@ import RegisterPage from "@/ui/pages/RegisterPage";
 import RegisterTutorPage from "@/ui/pages/RegisterTutorPage";
 import PlanesPage from "@/ui/pages/PlanesPage";
 import ParaTutoresPage from "@/ui/pages/ParaTutoresPage";
+import RecursosPage from "@/ui/pages/RecursosPage";
+import ResourceDetailPage from "@/ui/pages/ResourceDetailPage";
 import AuthCallbackPage from "@/ui/pages/AuthCallbackPage";
 
 // Student Dashboard Pages
@@ -20,6 +22,8 @@ import PlansPage from "@/ui/pages/dashboard/PlansPage";
 import NotificationsPage from "@/ui/pages/dashboard/NotificationsPage";
 import SettingsPage from "@/ui/pages/dashboard/SettingsPage";
 import ProfilePage from "@/ui/pages/dashboard/ProfilePage";
+import TutorProfilePage from "@/ui/pages/dashboard/TutorProfilePage";
+import BookingPage from "@/ui/pages/dashboard/BookingPage";
 
 // Tutor Dashboard Pages
 import TutorDashboardHome from "@/ui/pages/dashboard/TutorDashboardHome";
@@ -53,6 +57,14 @@ export const router = createBrowserRouter([
       {
         path: "para-tutores",
         element: <ParaTutoresPage />,
+      },
+      {
+        path: "recursos",
+        element: <RecursosPage />,
+      },
+      {
+        path: "recursos/:slug",
+        element: <ResourceDetailPage />,
       },
     ],
   },
@@ -91,6 +103,14 @@ export const router = createBrowserRouter([
       {
         path: "buscar-tutores",
         element: <SearchTutorsPage />,
+      },
+      {
+        path: "tutor/:tutorId",
+        element: <TutorProfilePage />,
+      },
+      {
+        path: "reservar/:tutorId",
+        element: <BookingPage />,
       },
       {
         path: "mis-sesiones",

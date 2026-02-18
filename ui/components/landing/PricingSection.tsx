@@ -23,7 +23,6 @@ const plans = [
     description: "El mas popular",
     features: [
       "5 sesiones incluidas",
-      "Grabaciones ilimitadas",
       "Resumenes por IA",
       "Chat prioritario",
       "Materiales de estudio",

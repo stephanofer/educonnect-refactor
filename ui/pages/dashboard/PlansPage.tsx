@@ -12,6 +12,10 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  ShieldCheck,
+  Clock,
+  RefreshCcw,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/ui/components/shadcn/button";
 import { Badge } from "@/ui/components/shadcn/badge";
@@ -67,7 +71,6 @@ const PLAN_FEATURES: Record<PlanTier, string[]> = {
   ],
   premium: [
     "5 sesiones de 1 hora incluidas",
-    "Grabaciones ilimitadas",
     "Resúmenes generados por IA",
     "Chat prioritario 24/7",
     "Plan de estudio personalizado",
@@ -378,6 +381,91 @@ export default function PlansPage() {
           );
         })}
       </div>
+
+      {/* Refund Guarantee */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-background to-teal-50 border-emerald-200/60">
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-100/30 rounded-full -translate-y-1/2 translate-x-1/3" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-teal-100/20 rounded-full translate-y-1/2 -translate-x-1/4" />
+
+          <CardHeader className="relative">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="size-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                <ShieldCheck className="size-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Garantia de satisfaccion</CardTitle>
+                <CardDescription>Tu tranquilidad es nuestra prioridad</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="relative space-y-6">
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">
+              Creemos en la calidad de nuestros tutores. Si despues de tu sesion
+              sientes que el tutor no cumplio tus expectativas, te devolvemos el
+              100% de tu sesion. Sin preguntas, sin complicaciones.
+            </p>
+
+            <div className="grid sm:grid-cols-3 gap-3">
+              <div className="flex items-start gap-3 bg-white/70 backdrop-blur-sm rounded-xl p-3 border border-emerald-100">
+                <div className="size-9 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <Clock className="size-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground text-xs">Solicita en 24 horas</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Despues de la sesion para pedir tu devolucion
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 bg-white/70 backdrop-blur-sm rounded-xl p-3 border border-emerald-100">
+                <div className="size-9 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <RefreshCcw className="size-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground text-xs">Devolucion completa</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Reembolso a tu saldo o metodo de pago
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 bg-white/70 backdrop-blur-sm rounded-xl p-3 border border-emerald-100">
+                <div className="size-9 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="size-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground text-xs">Sin complicaciones</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Contactanos por chat o email al instante
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <div className="size-1.5 rounded-full bg-emerald-500" />
+                <span>+500 devoluciones procesadas</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="size-1.5 rounded-full bg-emerald-500" />
+                <span>Tiempo promedio: menos de 2 horas</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="size-1.5 rounded-full bg-emerald-500" />
+                <span>98% de satisfaccion post-resolucion</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Purchase Dialog */}
       <Dialog open={purchaseStep !== "idle"} onOpenChange={() => closeDialog()}>

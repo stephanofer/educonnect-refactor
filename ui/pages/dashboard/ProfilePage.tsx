@@ -11,6 +11,11 @@ import {
   Loader2,
   CheckCircle2,
   X,
+  Gift,
+  Copy,
+  Check,
+  Link,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/ui/components/shadcn/button";
 import {
@@ -101,6 +106,9 @@ export default function ProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarRemoved, setAvatarRemoved] = useState(false);
+  const [referralLink, setReferralLink] = useState<string | null>(null);
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Initialize form with react-hook-form and zod resolver
   const form = useForm<ProfileFormData>({
@@ -470,6 +478,118 @@ export default function ProfilePage() {
                     </FormItem>
                   )}
                 />
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Referral Section */}
+          <motion.div variants={itemVariants}>
+            <Card className="relative overflow-hidden">
+              {/* Decorative background */}
+              <div className="absolute top-0 right-0 w-56 h-56 bg-gradient-to-bl from-primary/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+
+              <CardHeader className="relative">
+                <CardTitle className="flex items-center gap-2">
+                  <Gift className="size-5 text-primary" />
+                  Programa de Referidos
+                </CardTitle>
+                <CardDescription>
+                  Invita a tus amigos y gana beneficios cuando se suscriban a un plan
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="relative space-y-5">
+
+                {/* Generate / Display link */}
+                {!referralLink ? (
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="relative flex-1">
+                      <Link className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/50" />
+                      <Input
+                        placeholder="Tu enlace de referido aparecera aqui..."
+                        disabled
+                        className="pl-10 bg-muted/30 text-muted-foreground"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={async () => {
+                        setIsGeneratingLink(true);
+                        // Simulate generation delay
+                        await new Promise((r) => setTimeout(r, 1500));
+                        const code = user?.id
+                          ? user.id.slice(0, 8).toUpperCase()
+                          : Math.random().toString(36).slice(2, 10).toUpperCase();
+                        setReferralLink(
+                          `https://educonnect.stephanofer.com/ref/${code}`
+                        );
+                        setIsGeneratingLink(false);
+                        toast.success("Enlace de referido generado exitosamente");
+                      }}
+                      disabled={isGeneratingLink}
+                      className="gap-2 shrink-0"
+                    >
+                      {isGeneratingLink ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin" />
+                          Generando...
+                        </>
+                      ) : (
+                        <>
+                          <Link className="size-4" />
+                          Generar enlace de referidos
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Link display + copy */}
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="relative flex-1">
+                        <Link className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-primary" />
+                        <Input
+                          value={referralLink}
+                          readOnly
+                          className="pl-10 pr-3 font-mono text-sm bg-primary/5 border-primary/20 text-foreground"
+                          onClick={(e) => (e.target as HTMLInputElement).select()}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant={linkCopied ? "default" : "outline"}
+                        className={`gap-2 shrink-0 min-w-[140px] transition-all duration-300 ${
+                          linkCopied
+                            ? "bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-500"
+                            : ""
+                        }`}
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(referralLink);
+                          setLinkCopied(true);
+                          toast.success("Enlace copiado al portapapeles");
+                          setTimeout(() => setLinkCopied(false), 2500);
+                        }}
+                      >
+                        {linkCopied ? (
+                          <>
+                            <Check className="size-4" />
+                            Copiado!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="size-4" />
+                            Copiar enlace
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Hint */}
+                    <p className="text-xs text-muted-foreground">
+                      Comparte este enlace con tus amigos. Cuando se registren y
+                      adquieran un plan, ambos recibiran beneficios.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
