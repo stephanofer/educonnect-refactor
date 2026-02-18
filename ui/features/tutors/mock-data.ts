@@ -41,6 +41,7 @@ export interface MockTutor {
   isVerified: boolean;
   isAvailable: boolean;
   isFavorite: boolean;
+  hourlyRate: number;
   recommendationRate: number;
   subjects: Subject[];
   credentials: MockTutorCredential[];
@@ -123,6 +124,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 45,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[0], MOCK_SUBJECTS[2], MOCK_SUBJECTS[6], MOCK_SUBJECTS[7], MOCK_SUBJECTS[14]],
     credentials: [
@@ -147,6 +149,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: true,
+    hourlyRate: 50,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[0], MOCK_SUBJECTS[1], MOCK_SUBJECTS[2], MOCK_SUBJECTS[8]],
     credentials: [
@@ -170,6 +173,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 40,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[3], MOCK_SUBJECTS[4], MOCK_SUBJECTS[0], MOCK_SUBJECTS[5]],
     credentials: [
@@ -193,6 +197,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 45,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[8], MOCK_SUBJECTS[9], MOCK_SUBJECTS[0], MOCK_SUBJECTS[10]],
     credentials: [
@@ -216,6 +221,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 55,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[9], MOCK_SUBJECTS[10], MOCK_SUBJECTS[8]],
     credentials: [
@@ -240,6 +246,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 42,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[12], MOCK_SUBJECTS[5]],
     credentials: [
@@ -263,6 +270,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 50,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[6], MOCK_SUBJECTS[7], MOCK_SUBJECTS[14]],
     credentials: [
@@ -287,6 +295,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: false,
     isFavorite: false,
+    hourlyRate: 48,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[5]],
     credentials: [
@@ -310,6 +319,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 55,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[13]],
     credentials: [
@@ -333,6 +343,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 60,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[11]],
     credentials: [
@@ -357,6 +368,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: false,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 38,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[3], MOCK_SUBJECTS[4], MOCK_SUBJECTS[1]],
     credentials: [
@@ -379,6 +391,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 52,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[10], MOCK_SUBJECTS[9]],
     credentials: [
@@ -403,6 +416,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 45,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[6], MOCK_SUBJECTS[7], MOCK_SUBJECTS[14]],
     credentials: [
@@ -426,6 +440,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 40,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[12], MOCK_SUBJECTS[5]],
     credentials: [
@@ -449,6 +464,7 @@ export const MOCK_TUTORS: MockTutor[] = [
     isVerified: true,
     isAvailable: true,
     isFavorite: false,
+    hourlyRate: 55,
     recommendationRate: 0,
     subjects: [MOCK_SUBJECTS[0], MOCK_SUBJECTS[1], MOCK_SUBJECTS[2], MOCK_SUBJECTS[8]],
     credentials: [

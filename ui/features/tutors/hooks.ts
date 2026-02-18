@@ -103,7 +103,8 @@ export function useMockTutors(filters: TutorFilters = {}) {
 }
 
 // Hook to get a single tutor detail by ID
-export function useMockTutorDetail(tutorId: string | undefined) {
+export const useTutorDetail = useMockTutorDetail;
+export function useMockTutorDetail(tutorId: string | undefined, _userId?: string) {
   if (!tutorId) return { data: null, isLoading: false };
   const tutor = MOCK_TUTORS.find((t) => t.id === tutorId) || null;
   return { data: tutor, isLoading: false };

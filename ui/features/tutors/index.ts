@@ -10,6 +10,7 @@ export {
 export {
   useMockTutors,
   useMockTutorDetail,
+  useTutorDetail,
   useToggleFavorite,
   useUniversities,
   useSubjects,

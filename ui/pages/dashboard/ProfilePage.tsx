@@ -15,7 +15,6 @@ import {
   Copy,
   Check,
   Link,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/ui/components/shadcn/button";
 import {
